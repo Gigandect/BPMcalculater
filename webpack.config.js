@@ -6,7 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = {
   // 開発モードか本番モードかを指定するよ
   // 本番モード('production')だと、JavaScriptも自動でminifyされるよ！
-  mode: 'production', // 本番公開を意識して、ここでproductionにしておこう！
+  // mode: 'production', // 本番公開を意識して、ここでproductionにしておこう！
 
   // webpackがビルドを開始する場所（エントリーポイント）
   entry: './src/index.js',
@@ -17,14 +17,28 @@ module.exports = {
     filename: 'bundle.js', // 出力されるJavaScriptファイル名（minifyされるよ！）
     clean: true, // 新しいビルドの前に'dist'フォルダをクリーンアップするよ
     assetModuleFilename: '[name][ext]',
-    publicPath: '/BPMcalculater/', // アセットのベースURLをルートに設定
+    publicPath: process.env.NODE_ENV === 'production' ? '/BPMcalculater/' : '/', // 環境変数で切り替える
   },
 
   // モジュール（ファイル）の処理方法を定義するよ
   module: {
     rules: [
-      // JavaScriptファイルの処理（Babelを使う場合）
-      // もしBabelをインストールしてなければこの部分はコメントアウトしてもOKだよ
+      // ★★★JavaScriptファイルのBabel処理ルールを追加するよ！★★★
+      // これがないとモダンなJS構文が変換されず、ブラウザでエラーになる可能性があるよ
+      {
+        test: /\.js$/, // .jsファイルに適用
+        exclude: /node_modules/, // node_modulesは除外
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              ['@babel/preset-env', {
+                modules: false // ★ここを追加してみる！★
+              }]
+            ],
+          },
+        },
+      },
 
       // SCSSとCSSファイルの処理
       {
@@ -110,11 +124,12 @@ module.exports = {
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist'),
+      watch: true,
     },
     compress: true,
     port: 8080,
     open: true,
     historyApiFallback: true,
-    watchFiles: ['src/**/*.html'],
+    hot: true,
   },
 };

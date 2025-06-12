@@ -13,6 +13,18 @@
     @include fs(16);
 }
 
+@mixin mq() {
+    @media screen and (min-width: 767px) {
+        @content;
+    }
+}
+
+@mixin trans($sec: 0.2s) {
+    -webkit-transition: $sec ease-in-out;
+    -moz-transition: $sec ease-in-out;
+    transition: $sec ease-in-out;
+}
+
 
 // COMMON SETTINGS
 $black: #2D0C59;
@@ -32,7 +44,7 @@ input {
     margin-top: 1rem;
     appearance: none;
     border-radius: 0px;
-    background: rgba(#000, .7);
+    background: rgba(#000, .3);
     height: 20vw;
     border: none;
     padding: 0;
@@ -42,8 +54,15 @@ input {
     text-align: center;
     padding: .25rem;
     font-size: 15vw;
+    @include trans;
+
+    @include mq {
+        height: 10vw;
+        @include fs(56);
+    }
 
     &:focus {
+        background: rgba(#000, .7);
         outline: 2px solid $yellow;
         outline: none;
         box-shadow: 0 0 50px 10px rgba($blue, 0.25),
@@ -86,14 +105,21 @@ body {
 p {
     margin: 0;
     font-size: 5vw;
+    line-height: 1.3em;
+
+    @include mq {
+        @include fs(32);
+    }
 }
 
 .wrapper {
     height: 100%;
     max-width: 700px;
-
-
     margin-inline: auto;
+
+    @include mq {
+        max-width: 70vw;
+    }
 }
 
 main {
@@ -137,6 +163,10 @@ main {
 
     p {
         font-size: 8vw;
+
+        @include mq {
+            @include fs(56);
+        }
     }
 
     .i {
@@ -147,10 +177,20 @@ main {
             font-size: 10vw;
             text-shadow: -.2vw -.2vw 0 $l-pink,
                 .2vw .2vw 0 $d-pink;
+
+            @include mq {
+                @include fs(48);
+                text-shadow: -.1vw -.1vw 0 $l-pink,
+                    .1vw .1vw 0 $d-pink;
+            }
         }
 
         span {
             font-size: 25vw;
+
+            @include mq {
+                @include fs(150);
+            }
 
             .decimal-value {
                 font-size: 60%;
@@ -160,22 +200,30 @@ main {
 }
 
 footer {
-    margin-top: .5rem;
+    margin: .5rem 0;
 
     p {
         font-size: 3vw;
         line-height: 1;
+
+        @include mq {
+            @include fs(18);
+        }
     }
 
     .hint {
         cursor: pointer; // カーソルを指マークにする
         user-select: none; // テキスト選択を無効にする
         position: fixed;
-        bottom: 4px;
-        right: 4px;
+        bottom: 1rem;
+        right: 1rem;
         font-size: 7vw;
         line-height: 1;
         color: rgba(#FFF, .1);
+
+        @include mq {
+            @include fs(32);
+        }
     }
 }
 
