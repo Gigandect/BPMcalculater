@@ -17,7 +17,7 @@ module.exports = {
     filename: 'bundle.js', // 出力されるJavaScriptファイル名（minifyされるよ！）
     clean: true, // 新しいビルドの前に'dist'フォルダをクリーンアップするよ
     assetModuleFilename: '[name][ext]',
-    publicPath: '/', // アセットのベースURLをルートに設定
+    publicPath: '/BPMcalculater/', // アセットのベースURLをルートに設定
   },
 
   // モジュール（ファイル）の処理方法を定義するよ

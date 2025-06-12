@@ -189,7 +189,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         // Service Workerファイルのパスを指定して登録
         // ここでのパスは、ドメインのルートからの絶対パスになるように '/service-worker.js' と指定するよ
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/BPMcalculater/service-worker.js')
             .then(registration => {
                 console.log('Service Worker registered! Scope:', registration.scope);
             })
