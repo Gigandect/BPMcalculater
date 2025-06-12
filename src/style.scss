@@ -1,0 +1,236 @@
+@charset "UTF-8";
+@import "~normalize.css/normalize.css";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap'); // ★ここを追加！
+
+// MIXIN
+@mixin fs($fs) {
+    font-size: $fs + px;
+    font-size: calc((#{$fs} / 16) * 1rem);
+    line-height: 1.5em;
+}
+
+@mixin fs-base() {
+    @include fs(16);
+}
+
+
+// COMMON SETTINGS
+$black: #2D0C59;
+$d-black: #1B0736;
+$pink: #E770C2;
+$l-pink: #f9ddf1;
+$d-pink: #b91f89;
+$yellow: #F7C619;
+$blue: #37F2EE;
+$green: #62EDB2;
+
+* {
+    box-sizing: border-box;
+}
+
+input {
+    margin-top: 1rem;
+    appearance: none;
+    border-radius: 0px;
+    background: rgba(#000, .7);
+    height: 20vw;
+    border: none;
+    padding: 0;
+    min-width: 0;
+    width: 100%;
+    color: $yellow;
+    text-align: center;
+    padding: .25rem;
+    font-size: 15vw;
+
+    &:focus {
+        outline: 2px solid $yellow;
+        outline: none;
+        box-shadow: 0 0 50px 10px rgba($blue, 0.25),
+            inset 0 0 5px 4px rgba($blue, .2);
+    }
+}
+
+html,
+body {
+    overflow: hidden;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: calc(100% - 4rem);
+    min-height: 100%;
+    padding: 2rem;
+    font-family: 'Montserrat',
+        'Roboto',
+        'Helvetica Neue',
+        Arial,
+        'Noto Sans JP',
+        sans-serif;
+    font-weight: 900;
+    @include fs-base;
+    background: $black;
+    background: linear-gradient(10deg, $black, $d-black);
+    color: $yellow;
+    font-feature-settings: "palt" 1;
+    text-align: center;
+
+    &.easter-egg-active {
+        background: url('./flash.gif') repeat center center;
+    }
+}
+
+p {
+    margin: 0;
+    font-size: 5vw;
+}
+
+.wrapper {
+    height: 100%;
+    max-width: 700px;
+
+
+    margin-inline: auto;
+}
+
+main {
+    height: 100%;
+    gap: .5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.first,
+.second {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.first {
+    gap: .25rem;
+    flex-basis: 30%;
+
+    .l,
+    .r {
+        width: 100%;
+    }
+
+    .l {
+        color: $green;
+    }
+
+    .r {
+        color: $blue
+    }
+}
+
+.second {
+    flex-basis: 70%;
+    flex-direction: column;
+    border-top: 1px solid rgba(#000, .2);
+    color: $pink;
+
+    p {
+        font-size: 8vw;
+    }
+
+    .i {
+        margin-top: .5rem;
+
+        p {
+            line-height: 1;
+            font-size: 10vw;
+            text-shadow: -.2vw -.2vw 0 $l-pink,
+                .2vw .2vw 0 $d-pink;
+        }
+
+        span {
+            font-size: 25vw;
+
+            .decimal-value {
+                font-size: 60%;
+            }
+        }
+    }
+}
+
+footer {
+    margin-top: .5rem;
+
+    p {
+        font-size: 3vw;
+        line-height: 1;
+    }
+
+    .hint {
+        cursor: pointer; // カーソルを指マークにする
+        user-select: none; // テキスト選択を無効にする
+        position: fixed;
+        bottom: 4px;
+        right: 4px;
+        font-size: 7vw;
+        line-height: 1;
+        color: rgba(#FFF, .1);
+    }
+}
+
+/* hint-contの初期状態（非表示で画面外に） */
+.hint-cont {
+    position: fixed; // 画面に固定する
+    bottom: 0; // 画面の下端に配置
+    left: 0;
+    width: 100%; // 全幅にする
+    height: auto; // コンテンツに合わせて高さを自動調整
+    max-height: 80vh; // 例: 画面の高さの80%が最大
+    background-color: $yellow; // 背景色
+    color: $black; // 文字色
+    padding: 1rem; // 内側の余白
+    box-sizing: border-box; // paddingをwidthに含める
+    transform: translateY(100%); // 自身の高さ分だけ下に移動して、画面外に隠す
+    transition: transform 0.2s ease-out; // スムーズにアニメーションさせる
+    z-index: 1000; // 他の要素より手前に表示
+    overflow-y: auto; // 内容が多ければスクロールできるようにする
+
+    text-align: left;
+    font-family:
+        'Roboto',
+        'Helvetica Neue',
+        Arial,
+        'Noto Sans JP',
+        sans-serif;
+    font-weight: 400;
+
+    p {
+        @include fs(14);
+        margin-bottom: .5rem;
+
+        &.h2,
+        &.h3 {
+            font-weight: 700;
+        }
+
+        &.h2 {
+            @include fs(18);
+            margin-bottom: 1rem;
+        }
+
+        &.h3 {
+            margin: 1rem 0 .5rem;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+}
+
+/* hint-contが表示されたときの状態 */
+.hint-cont.is-active {
+    transform: translateY(0); // 元の位置に戻す（画面内に表示）
+}

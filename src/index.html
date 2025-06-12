@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPM CALCULATER</title>
+    <meta name="description" content="BPM計算機です。楽曲のBPMを変更する際のピッチのパーセンテージを簡単に計算できます。">
+    <meta name="keywords" content="DJ, BPM, 計算機, 音楽, ピッチ, テンポ">
+    <meta name="author" content="Gigandect">
+
+    <meta property="og:title" content="BPM CALCULATER">
+    <meta property="og:description" content="楽曲のBPMを変更する際のピッチのパーセンテージを簡単に計算できるツールです。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gigandect.github.io/BPMcalculater/icon-192x192.png"> <meta property="og:image" content="https://fuckyou.tokyo/wp-content/uploads/2024/03/ogp.png">
+    <meta property="og:site_name" content="FUCKYOU.tokyo | Gigandect Official Site">
+    <link rel="icon" href="https://gigandect.github.io/BPMcalculater/icon-192x192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="https://gigandect.github.io/BPMcalculater/icon-192x192.png" />
+    <meta name="msapplication-TileImage" content="https://gigandect.github.io/BPMcalculater/icon-192x192.png" />
+    <link rel="manifest" href="https://gigandect.github.io/BPMcalculater/manifest.webmanifest">
+</head>
+<body>
+<div class="wrapper">
+    <main>
+    <div class="first">
+        <div class="l">
+            <p>RAW BPM</p>
+            <div class="i">
+                <input type="number" min="0" max="999" maxlength="3" pattern="[0-9]{1,3}" inputmode="numeric" id="currentBPM" class="bpm-input">
+            </div>
+        </div>
+        <div class="r">
+            <p>TARGET BPM</p>
+            <div class="i">
+                <input type="number" min="0" max="999" maxlength="3" pattern="[0-9]{1,3}" inputmode="numeric" id="targetBPM" class="bpm-input">
+            </div>
+        </div>
+    </div>
+    <div class="second">
+        <p>RESULT</p>
+        <div class="i">
+            <p id="result-wrapper"><span id="result"><span class="main-value">-</span><span class="decimal-value"></span></span>%</p>
+        </div>
+    </div>
+    </main>
+</div>
+<footer>
+    <p>© 2025 Gigandect. All rights reserved.</p>
+    <p class="hint">?</p>
+</footer>
+
+<div class="hint-cont">
+    <p class="h2">BPM CALCULATER</p>
+    <p class="h3">インストール方法</p>
+    <p>このページをホーム画面に保存すれば良いよ。そのくらいは自分でもできるよね。</p>
+    <p class="h3">使い方</p>
+    <p>RAW BPMとTARGET BPMに数値を入力するとRESULTにピッチのパーセンテージが出力されます。</p>
+    <p>RAW BPMとTARGET BPMには3桁までの数値しか入力できないようになっています。4桁以上入力された場合は後半の3桁だけ入力されるようになっています。</p>
+    <p>RESULTに過剰な数値を出力させるようなバカはいないよね。</p>
+</div>
+</body>
+</html>
