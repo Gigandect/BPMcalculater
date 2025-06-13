@@ -197,20 +197,20 @@ document.addEventListener('DOMContentLoaded', calculateAndDisplayResult);
 
 // Service Workerの登録
 // ブラウザがService Workerに対応しているかを確認
-// if ('serviceWorker' in navigator) {
-//     // ページの読み込みが完了したらService Workerを登録
-//     window.addEventListener('load', () => {
-//         // Service Workerファイルのパスを指定して登録
-//         // ここでのパスは、ドメインのルートからの絶対パスになるように '/service-worker.js' と指定するよ
-//         navigator.serviceWorker.register('/BPMcalculater/service-worker.js')
-//             .then(registration => {
-//                 console.log('Service Worker registered! Scope:', registration.scope);
-//             })
-//             .catch(error => {
-//                 console.error('Service Worker registration failed:', error);
-//             });
-//     });
-// }
+if ('serviceWorker' in navigator) {
+    // ページの読み込みが完了したらService Workerを登録
+    window.addEventListener('load', () => {
+        // Service Workerファイルのパスを指定して登録
+        // ここでのパスは、ドメインのルートからの絶対パスになるように '/service-worker.js' と指定するよ
+        navigator.serviceWorker.register('/BPMcalculater/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered! Scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    });
+}
 
 
 // タップ検出用の要素を取得
