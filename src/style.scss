@@ -88,6 +88,44 @@ input[type="number"] {
     /* 数字入力フィールドとして扱う */
 }
 
+.bpm-controls {
+    margin-top: .5rem;
+    display: flex;
+    width: 100%;
+    gap: .25rem;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+
+    &.is-active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    button {
+        display: block;
+        appearance: none;
+        border: none;
+        background: none;
+        line-height: 1;
+        color: rgba($yellow, 1);
+        font-size: 6vw;
+        padding: .25rem 1rem;
+        margin: 0;
+        position: relative;
+
+        &:active {
+            color: rgba($yellow, .6);
+            top: 1px;
+        }
+    }
+}
+
 /* その他のブラウザ（もし将来的に対応が必要なら） */
 input[type="number"] {
     appearance: none;
@@ -244,10 +282,11 @@ footer {
         user-select: none; // テキスト選択を無効にする
         position: fixed;
         bottom: 1rem;
-        right: 1rem;
+        right: .5rem;
         font-size: 7vw;
         line-height: 1;
         color: rgba(#FFF, .1);
+        padding: 0 .5rem;
 
         @include mq {
             @include fs(32);

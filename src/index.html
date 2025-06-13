@@ -26,12 +26,20 @@
                 <p>RAW BPM</p>
                 <div class="i">
                     <input type="number" min="0" max="999" maxlength="3" pattern="[0-9]{1,3}" inputmode="numeric" id="currentBPM" class="bpm-input">
+                    <div class="bpm-controls" data-target="currentBPM">
+                        <button class="bpm-btn minus-btn">-</button>
+                        <button class="bpm-btn plus-btn">+</button>
+                    </div>
                 </div>
             </div>
             <div class="r">
                 <p>TARGET BPM</p>
                 <div class="i">
                     <input type="number" min="0" max="999" maxlength="3" pattern="[0-9]{1,3}" inputmode="numeric" id="targetBPM" class="bpm-input">
+                    <div class="bpm-controls" data-target="targetBPM">
+                        <button class="bpm-btn minus-btn">-</button>
+                        <button class="bpm-btn plus-btn">+</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -58,6 +66,7 @@
     <p>RAW BPMとTARGET BPMに数値を入力するとRESULTにピッチのパーセンテージが出力されるよ。</p>
     <p>RAW BPMとTARGET BPMには3桁までの数値しか入力できないようになっています。4桁以上入力された場合は後半の3桁だけ入力されるようになっているよ。</p>
     <p>画面をタップすると平均値を出してRAW BPMにその数値を入力するよ。</p>
+    <p>[+],[-]をタップすると数値を1づつ増減できるよ。</p>
     <p>RESULTに過剰な数値を出力させるようなバカはいないよね。</p>
 </div>
 </body>

@@ -8,6 +8,11 @@ const resultWrapper = document.getElementById('result-wrapper');
 const tapDetector = document.getElementById('tap-detector');
 const bodyElement = document.body;
 
+//ボタン要素
+const currentBpmControls = document.querySelector('.bpm-controls[data-target="currentBPM"]');
+const targetBpmControls = document.querySelector('.bpm-controls[data-target="targetBPM"]');
+
+
 // UIの状態管理に使う定数や変数
 const easterEggClass = 'easter-egg-active';
 // RESULTの初期表示形式をHTMLとして定義
@@ -22,6 +27,21 @@ function calculateAndDisplayResult() {
     const currentBpmValue = currentBpmInput ? parseInt(currentBpmInput.value, 10) : NaN;
     const targetBpmValue = targetBpmInput ? parseInt(targetBpmInput.value, 10) : NaN;
     const activeElement = document.activeElement; // 現在フォーカスされている要素
+
+
+    // BPMコントロールボタンの表示/非表示を更新する
+    // currentBPMに数値が入っていれば表示、そうでなければ非表示
+    if (!isNaN(currentBpmValue) && currentBpmInput.value !== '') {
+        currentBpmControls.classList.add('is-active');
+    } else {
+        currentBpmControls.classList.remove('is-active');
+    }
+    // targetBPMに数値が入っていれば表示、そうでなければ非表示
+    if (!isNaN(targetBpmValue) && targetBpmInput.value !== '') {
+        targetBpmControls.classList.add('is-active');
+    } else {
+        targetBpmControls.classList.remove('is-active');
+    }
 
     // 両方の入力欄が数値で、かつ空でないことを確認
     if (!isNaN(currentBpmValue) && !isNaN(targetBpmValue) && currentBpmInput.value !== '' && targetBpmInput.value !== '') {
@@ -45,9 +65,9 @@ function calculateAndDisplayResult() {
         // イースターエッグの発動条件：入力欄が非フォーカスかつRESULTが4桁以上
         if (
             resultWrapper &&
-            mainValueString.length >= 4 &&
-            activeElement !== currentBpmInput &&
-            activeElement !== targetBpmInput
+            mainValueString.length >= 4
+            // activeElement !== currentBpmInput &&
+            // activeElement !== targetBpmInput
         ) {
             console.log('FUCK YOU!'); // コンソールに出力
             resultWrapper.textContent = 'FUCK YOU!'; // 表示をイースターエッグメッセージに
@@ -204,7 +224,16 @@ function handleTapStart(event) {
         const sum = intervals.reduce((a, b) => a + b, 0);
         const averageInterval = sum / intervals.length; // 間隔の平均値
 
-        const detectedBPM = 60000 / averageInterval; // BPMに変換
+        let detectedBPM = 60000 / averageInterval; // BPMに変換
+
+        // 計算されたBPMを丸めて、0-999の範囲に制限する
+        detectedBPM = Math.round(detectedBPM); 
+        if (detectedBPM < 0) { 
+            detectedBPM = 0;
+        }
+        if (detectedBPM > 999) { 
+            detectedBPM = 999;
+        }
 
         currentBpmInput.value = Math.round(detectedBPM); // BPM入力欄に結果を設定
         calculateAndDisplayResult(); // 結果表示も更新
@@ -222,6 +251,61 @@ function handleTapEnd(event) {
     bodyElement.classList.remove('tap-active'); // bodyの光るクラスを削除
 }
 
+
+// --- BPM増減ボタンの制御ロジック ---
+// 特定の入力フィールドの値を増減させる関数
+function adjustBpm(inputId, change) {
+    const inputElement = document.getElementById(inputId);
+    if (inputElement) {
+        let currentValue = parseInt(inputElement.value, 10);
+        if (isNaN(currentValue)) {
+            currentValue = 0; // もし値がない場合は0から始める
+        }
+        let newValue = currentValue + change;
+
+        // 値の範囲を0-999に制限
+        if (newValue < 0) newValue = 0;
+        if (newValue > 999) newValue = 999;
+
+        inputElement.value = String(newValue);
+        // 値が変更されたら、計算と表示を更新
+        calculateAndDisplayResult();
+    }
+}
+
+// 各BPMコントロールセットにイベントリスナーを設定する
+function setupBpmControls() {
+    document.querySelectorAll('.bpm-controls').forEach(controlGroup => {
+        const targetInputId = controlGroup.dataset.target; // data-target属性から対象のinputIDを取得
+        const minusBtn = controlGroup.querySelector('.minus-btn');
+        const plusBtn = controlGroup.querySelector('.plus-btn');
+
+        if (minusBtn) {
+            minusBtn.addEventListener('click', (event) => {
+                event.preventDefault(); // デフォルト動作をキャンセル
+                adjustBpm(targetInputId, -1);
+            });
+            // スマホでのより即時的な反応のためにtouchstartも追加する
+            minusBtn.addEventListener('touchstart', (event) => {
+                event.preventDefault(); // デフォルト動作をキャンセル
+                adjustBpm(targetInputId, -1);
+            });
+        }
+        if (plusBtn) {
+            plusBtn.addEventListener('click', (event) => {
+                event.preventDefault(); // デフォルト動作をキャンセル
+                adjustBpm(targetInputId, 1);
+            });
+            // スマホでのより即時的な反応のためにtouchstartも追加する
+            plusBtn.addEventListener('touchstart', (event) => {
+                event.preventDefault(); // デフォルト動作をキャンセル
+                adjustBpm(targetInputId, 1);
+            });
+        }
+    });
+}
+
+
 // --- イベントリスナーの登録と初期化 ---
 
 // タップ検出関連のイベントリスナー
@@ -232,7 +316,10 @@ tapDetector.addEventListener('mouseup', handleTapEnd);
 tapDetector.addEventListener('touchcancel', handleTapEnd); // タップがキャンセルされた場合
 
 // ページの読み込みが完了したら初期計算とタップテンポのリセットを実行
-document.addEventListener('DOMContentLoaded', calculateAndDisplayResult);
+document.addEventListener('DOMContentLoaded', () => {
+    calculateAndDisplayResult(); // 初期表示のため
+    setupBpmControls(); // BPM増減ボタンのイベントリスナーを設定
+});
 resetTapTempo(); // アプリ起動時にタップテンポ履歴をリセット
 
 // --- Service Workerの登録 ---
