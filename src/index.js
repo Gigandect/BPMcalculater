@@ -158,13 +158,26 @@ if (hintButton && hintContent) {
         event.stopPropagation();
     });
 
-    // document全体がクリックされた時の処理（このリスナーは一度だけ登録すればいい）
+    // document全体がクリックされた時の処理 (PC用)
     document.addEventListener('click', (event) => {
         // クリックされた場所が hintContent の中、または hintButton の中「ではない」なら
         // かつ hintContent が表示中なら
         if (
             !hintContent.contains(event.target) &&
-            !hintButton.contains(event.target) &&
+            !hintButton.contains(event.target) && // hintButton自体がクリックされた場合も閉じない
+            hintContent.classList.contains('is-active')
+        ) {
+            hintContent.classList.remove('is-active'); // クラスを削除して非表示にする
+            document.body.style.overflow = ''; // スクロールを元に戻す
+        }
+    });
+    // document全体がタッチ開始された時の処理 (スマホ用)
+    document.addEventListener('touchstart', (event) => {
+        // タッチ開始された場所が hintContent の中、または hintButton の中「ではない」なら
+        // かつ hintContent が表示中なら
+        if (
+            !hintContent.contains(event.target) &&
+            !hintButton.contains(event.target) && // hintButton自体がタッチされた場合も閉じない
             hintContent.classList.contains('is-active')
         ) {
             hintContent.classList.remove('is-active'); // クラスを削除して非表示にする
@@ -184,17 +197,114 @@ document.addEventListener('DOMContentLoaded', calculateAndDisplayResult);
 
 // Service Workerの登録
 // ブラウザがService Workerに対応しているかを確認
-if ('serviceWorker' in navigator) {
-    // ページの読み込みが完了したらService Workerを登録
-    window.addEventListener('load', () => {
-        // Service Workerファイルのパスを指定して登録
-        // ここでのパスは、ドメインのルートからの絶対パスになるように '/service-worker.js' と指定するよ
-        navigator.serviceWorker.register('/BPMcalculater/service-worker.js')
-            .then(registration => {
-                console.log('Service Worker registered! Scope:', registration.scope);
-            })
-            .catch(error => {
-                console.error('Service Worker registration failed:', error);
-            });
-    });
+// if ('serviceWorker' in navigator) {
+//     // ページの読み込みが完了したらService Workerを登録
+//     window.addEventListener('load', () => {
+//         // Service Workerファイルのパスを指定して登録
+//         // ここでのパスは、ドメインのルートからの絶対パスになるように '/service-worker.js' と指定するよ
+//         navigator.serviceWorker.register('/BPMcalculater/service-worker.js')
+//             .then(registration => {
+//                 console.log('Service Worker registered! Scope:', registration.scope);
+//             })
+//             .catch(error => {
+//                 console.error('Service Worker registration failed:', error);
+//             });
+//     });
+// }
+
+
+// タップ検出用の要素を取得
+const tapDetector = document.getElementById('tap-detector');
+// BPM入力フィールドを取得
+const currentBPMInput = document.getElementById('currentBPM');
+const bodyElement = document.body;
+
+// タップのタイムスタンプを保存する配列
+let tapTimes = [];
+// タップ間隔をリセットするためのタイマーID
+let resetTimerId;
+
+// タップ間隔をリセットする関数
+function resetTapTempo() {
+    tapTimes = []; // 配列を空にする
+    if (resetTimerId) {
+        clearTimeout(resetTimerId); // 既存のタイマーをクリア
+    }
+    console.log("Tap tempo reset."); // デバッグ用
 }
+
+// タップ（PCではクリック）開始イベントリスナーを追加
+tapDetector.addEventListener('touchstart', handleTapStart); // スマホなどのタッチデバイス用
+tapDetector.addEventListener('mousedown', handleTapStart);  // PCのマウスダウン用
+
+// タップ（PCではクリック）終了イベントリスナーを追加
+tapDetector.addEventListener('touchend', handleTapEnd);     // スマホなどのタッチデバイス用
+tapDetector.addEventListener('mouseup', handleTapEnd);      // PCのマウスアップ用
+tapDetector.addEventListener('touchcancel', handleTapEnd);  // タップがキャンセルされた場合用
+
+// イベントハンドラを関数として定義する
+function handleTapStart(event) {
+    // マウスの場合、左クリック（ボタン0）のみ反応するようにする
+    if (event.type === 'mousedown' && event.button !== 0) {
+        return; // 左クリック以外は無視
+    }
+    
+
+    // タッチイベントのデフォルト動作（ダブルタップズームなど）を防ぐ
+    // 'mousedown' イベントではデフォルト動作をキャンセルしない方がPCでテキスト選択などができるため、
+    // touchstart の場合にのみ適用するのがベストプラクティスだよ。
+    if (event.type === 'touchstart') {
+        event.preventDefault(); 
+    }
+
+
+    // イベントのデフォルト動作を防ぐ（スクロールなど）
+    // PCでは問題ないことが多いが、スマホで必要になる場合がある
+    // if (event.cancelable) { // イベントがキャンセル可能か確認
+    //     event.preventDefault(); 
+    // }
+
+    if (resetTimerId) {
+        clearTimeout(resetTimerId);
+    }
+
+    const currentTime = Date.now();
+    tapTimes.push(currentTime);
+
+    console.log("Tap!", tapTimes);
+
+    bodyElement.classList.add('tap-active');
+
+    if (tapTimes.length > 5) {
+        tapTimes.shift();
+    }
+
+    if (tapTimes.length >= 5) {
+        let intervals = [];
+        for (let i = 0; i < tapTimes.length - 1; i++) {
+            intervals.push(tapTimes[i + 1] - tapTimes[i]);
+        }
+
+        const sum = intervals.reduce((a, b) => a + b, 0);
+        const averageInterval = sum / intervals.length;
+        const detectedBPM = 60000 / averageInterval;
+
+        currentBPMInput.value = Math.round(detectedBPM);
+        calculateAndDisplayResult(); // BPMを更新したら結果も計算
+    }
+
+    resetTimerId = setTimeout(resetTapTempo, 3000);
+}
+
+// タップ終了イベントリスナーを追加
+function handleTapEnd(event) {
+    // マウスの場合、左クリック（ボタン0）のみ反応するようにする
+    if (event.type === 'mouseup' && event.button !== 0) {
+        return; // 左クリック以外は無視
+    }
+    
+    bodyElement.classList.remove('tap-active');
+}
+
+// 初期化（もし必要なら）
+resetTapTempo(); // アプリ起動時に一度リセットしておく
