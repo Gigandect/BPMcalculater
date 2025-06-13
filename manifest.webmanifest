@@ -1,0 +1,33 @@
+{
+  "name": "BPM CALCULATOR",
+  "short_name": "BPM CALC",
+  "description": "楽曲のBPM変更時のピッチを計算するアプリです。",
+  "start_url": "/BPMcalculater/",
+  "display": "standalone",
+  "background_color": "#2D0C59",
+  "theme_color": "#2D0C59",
+  "icons": [
+    {
+      "src": "/BPMcalculater/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/BPMcalculater/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/BPMcalculater/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/BPMcalculater/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
