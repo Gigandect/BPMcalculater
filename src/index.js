@@ -165,7 +165,7 @@ function resetTapTempo() {
     if (resetTimerId) {
         clearTimeout(resetTimerId); // 既存のタイマーをクリア
     }
-    console.log("Tap tempo reset."); // デバッグ用ログ
+    // console.log("Tap tempo reset."); // デバッグ用ログ
 }
 
 // タップ開始時の処理ハンドラ
@@ -185,17 +185,17 @@ function handleTapStart(event) {
 
     const currentTime = Date.now(); // 現在のタイムスタンプを取得
     tapTimes.push(currentTime);     // 配列に追加
-    console.log("Tap!", tapTimes); // デバッグ用ログ
+    // console.log("Tap!", tapTimes); // デバッグ用ログ
 
     bodyElement.classList.add('tap-active'); // タップ時にbodyを光らせる
 
-    // 最新の5回分のタップ時刻だけを保持（5回目以降は古いものを削除）
-    if (tapTimes.length > 5) {
+    // 最新の8回分のタップ時刻だけを保持（8回目以降は古いものを削除）
+    if (tapTimes.length > 8) {
         tapTimes.shift(); 
     }
 
-    // 5回タップされたら（4つの間隔が揃ったら）BPMを計算
-    if (tapTimes.length >= 5) {
+    // 8回タップされたら（7つの間隔が揃ったら）BPMを計算
+    if (tapTimes.length >= 8) {
         const intervals = []; // 各タップ間隔を保存
         for (let i = 0; i < tapTimes.length - 1; i++) {
             intervals.push(tapTimes[i + 1] - tapTimes[i]);
