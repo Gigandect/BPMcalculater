@@ -4,132 +4,115 @@ const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  // 開発モードか本番モードかを指定するよ
-  // 本番モード('production')だと、JavaScriptも自動でminifyされるよ！
-  // mode: 'production', // 本番公開を意識して、ここでproductionにしておこう！
+  // ビルドモードの指定（開発用か本番用か）
+  // 'production'にすると、JavaScriptが自動でminifyされるよ
+  // mode: 'production', 
 
-  // webpackがビルドを開始する場所（エントリーポイント）
+  // エントリーポイント: webpackがビルドを開始するJavaScriptファイル
   entry: './src/index.js',
 
-  // バンドルされたファイルを出力する場所とファイル名
+  // 出力設定: バンドルされたファイルの保存場所とファイル名
   output: {
-    path: path.resolve(__dirname, 'dist'), // 'dist'フォルダに出力するよ
-    filename: 'bundle.js', // 出力されるJavaScriptファイル名（minifyされるよ！）
-    clean: true, // 新しいビルドの前に'dist'フォルダをクリーンアップするよ
-    assetModuleFilename: '[name][ext]',
-    publicPath: process.env.NODE_ENV === 'production' ? '/BPMcalculater/' : '/', // 環境変数で切り替える
+    path: path.resolve(__dirname, 'dist'), // 出力先ディレクトリ
+    filename: 'bundle.js',                 // JavaScriptバンドルファイル名
+    clean: true,                           // 新しいビルドの前に'dist'フォルダをクリーンアップ
+    assetModuleFilename: '[name][ext]',    // アセットモジュールのファイル名テンプレート
+    // 本番環境では '/BPMcalculater/'、開発環境では '/' を使用
+    publicPath: process.env.NODE_ENV === 'production' ? '/BPMcalculater/' : '/', 
   },
 
-  // モジュール（ファイル）の処理方法を定義するよ
+  // モジュールルール: 各種ファイルの処理方法を定義
   module: {
     rules: [
-      // ★★★JavaScriptファイルのBabel処理ルールを追加するよ！★★★
-      // これがないとモダンなJS構文が変換されず、ブラウザでエラーになる可能性があるよ
+      // JavaScriptファイルの処理: Babelを使ってモダンなJS構文を変換
       {
-        test: /\.js$/, // .jsファイルに適用
-        exclude: /node_modules/, // node_modulesは除外
+        test: /\.js$/,          // .jsファイルを対象
+        exclude: /node_modules/, // node_modulesディレクトリは除外
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [
-              ['@babel/preset-env', {
-                modules: false // ★ここを追加してみる！★
-              }]
-            ],
+            presets: [['@babel/preset-env', { modules: false }]],
           },
         },
       },
-
-      // SCSSとCSSファイルの処理
+      // SCSS/CSSファイルの処理: SCSSをCSSにコンパイルし、HTMLに注入
       {
         test: /\.(scss|css)$/,
         use: [
-          'style-loader',       // 1. JSに変換されたCSSをHTMLに注入（最後に実行される）
+          'style-loader',       // JSに変換されたCSSをHTMLに注入
           {
-            loader: 'css-loader', // 2. CSSをJavaScriptのモジュールに変換
+            loader: 'css-loader', // CSSをJSモジュールに変換
             options: {
-              url: true,             // url() などを解決
-              importLoaders: 2,      // postcss-loader と sass-loader の後にcss-loaderを実行
+              url: true,             // url() 関数を解決
+              importLoaders: 2,      // 後続のローダーの後にcss-loaderを実行
               sourceMap: false,
             },
           },
-          'postcss-loader',     // 3. PostCSS (cssnano) でCSSを最適化・コメント削除
-          'sass-loader',        // 4. SCSSをCSSにコンパイル（最初に実行される）
+          'postcss-loader',     // PostCSSでCSSを最適化
+          'sass-loader',        // SCSSをCSSにコンパイル
         ],
       },
-      //画像ファイルの処理
+      // GIF画像の処理: ファイル内容をBase64としてJSバンドルに埋め込む
       {
-        test: /\.gif$/i, // .gifファイルだけを対象にする
-        type: 'asset/inline', // ファイルの内容をbase64としてJSバンドルに埋め込む
+        test: /\.gif$/i,
+        type: 'asset/inline',
       },
+      // その他の画像ファイルの処理: ファイルとして出力
       {
-        test: /\.(png|svg|jpg|jpeg)$/i, // .gif以外の画像は引き続きファイルとして出力
+        test: /\.(png|svg|jpg|jpeg)$/i,
         type: 'asset/resource',
         generator: {
-          filename: '[name][ext]', // 他の画像はdist直下に出力
+          filename: '[name][ext]', // 出力ファイル名
         },
       },
-      // HTMLファイルの処理
+      // HTMLファイルの処理: HTMLをWebpackで扱えるようにする
       {
         test: /\.html$/,
-        use: ['html-loader'], // HTMLファイルもWebpackで扱えるようにするよ
+        use: ['html-loader'],
       },
     ],
   },
 
-  // プラグインの設定（特別なタスクを実行するよ）
+  // プラグイン設定: ビルドプロセスで特別なタスクを実行
   plugins: [
+    // HTMLファイルを生成し、バンドルされたJS/CSSを注入
     new HtmlWebpackPlugin({
-      template: './src/index.html', // 元になるHTMLファイルの場所
-      filename: 'index.html', // 出力されるHTMLファイル名
-      inject: 'body', // <script>タグを<body>の直前に挿入する設定。HtmlInlineScriptPluginがこれをインライン化する
-      
-      // ★ここが大事！生成されるHTML、CSS、JSをまとめてminifyする設定だよ！
+      template: './src/index.html', // 元になるHTMLファイル
+      filename: 'index.html',     // 出力されるHTMLファイル名
+      inject: 'body',             // <script>タグを<body>の直前に挿入
+      // 生成されるHTML, CSS, JSをminify（最適化）
       minify: {
-        collapseWhitespace: true, // 空白を削除
-        removeComments: true,     // コメントを削除
+        collapseWhitespace: true,      // 空白を削除
+        removeComments: true,          // コメントを削除
         removeRedundantAttributes: true, // 不要な属性を削除
         removeScriptTypeAttributes: true, // scriptタグのtype属性を削除
-        useShortDoctype: true,    // DOCTYPEを短縮
-        // その他のminifyオプションも設定できるよ！
+        useShortDoctype: true,         // DOCTYPEを短縮
       },
     }),
-    // ★JavaScriptをHTMLにインライン化するプラグインを追加！
+    // 生成されたJavaScriptをHTMLファイルに直接インライン化
     new HtmlInlineScriptPlugin({
-      scriptMatchPattern: [/bundle\.js$/], // 'bundle.js' をインライン化の対象にする
+      scriptMatchPattern: [/bundle\.js$/], // 'bundle.js'をインライン化の対象に
     }),
-
+    // 指定されたファイルを'dist'フォルダにコピー
     new CopyWebpackPlugin({
       patterns: [
-        { 
-          from: 'src/icons/', // コピー元のディレクトリ
-          to: 'icons/',      // コピー先のディレクトリ (distフォルダ内)
-          noErrorOnMissing: true, // ソースが存在しなくてもエラーにしない
-        },
-        { 
-          from: 'manifest.webmanifest', // ルートにあるマニフェストファイル
-          to: './', // distフォルダの直下に出力
-          noErrorOnMissing: true,
-        },
-        {
-          from: 'service-worker.js', // ルートにあるService Workerファイル
-          to: './', // distフォルダの直下に出力
-          noErrorOnMissing: true,
-        }
+        { from: 'src/icons/', to: 'icons/', noErrorOnMissing: true }, // アイコンフォルダ
+        { from: 'manifest.webmanifest', to: './', noErrorOnMissing: true }, // マニフェストファイル
+        { from: 'service-worker.js', to: './', noErrorOnMissing: true },   // Service Workerファイル
       ],
     }),
   ],
 
-  // 開発サーバーの設定（これは開発用だから、本番ビルドには影響しないよ）
+  // 開発サーバー設定: 開発中のライブリロードなどを提供
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist'),
       watch: true,
     },
-    compress: true,
-    port: 8080,
-    open: true,
-    historyApiFallback: true,
-    hot: true,
+    compress: true, // サーバーからのレスポンスを圧縮
+    port: 8080,     // サーバーポート
+    open: true,     // サーバー起動時にブラウザを自動で開く
+    historyApiFallback: true, // SPAのための設定
+    hot: true,      // ホットモジュール置換を有効に
   },
 };

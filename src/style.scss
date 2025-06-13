@@ -72,6 +72,27 @@ input {
     }
 }
 
+/* スピナーボタンを非表示にするスタイル */
+/* WebKit系のブラウザ（Chrome, Safariなど）用 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    /* デフォルトのUIを非表示にする */
+    margin: 0;
+    /* 余白を削除 */
+}
+
+/* Firefox用 */
+input[type="number"] {
+    -moz-appearance: textfield;
+    /* 数字入力フィールドとして扱う */
+}
+
+/* その他のブラウザ（もし将来的に対応が必要なら） */
+input[type="number"] {
+    appearance: none;
+}
+
 html,
 body {
     overflow: hidden;

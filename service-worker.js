@@ -1,61 +1,48 @@
 // service-worker.js
 
-// キャッシュの名前を定義するよ！バージョンを上げていくことで古いキャッシュを更新できるんだ。
-const CACHE_NAME = 'bpm-calculator-cache-v1.0.0'; // 例えば、バージョン番号を付けておくと管理しやすいよ
+// キャッシュの名前を定義（新しいバージョンで更新できるようバージョン番号を含む）
+const CACHE_NAME = 'bpm-calculator-cache-v1.0.0';
 
-// アプリのオフライン動作に必須なファイルをリストアップするよ！
-// ここにリストアップされたファイルは、Service Workerがインストールされた時にキャッシュされるんだ。
-// パスは全てウェブサイトのルートからの相対パスで指定してね。
+// オフライン動作に必要なファイルのリスト
+// これらはService Workerがインストールされたときにキャッシュされるよ
 const urlsToCache = [
-  '/BPMcalculater/',                     // アプリのトップページ (index.html)
-  '/BPMcalculater/index.html',           // index.html自体
-  // HTMLInlineScriptPluginを使っているからbundle.jsやbundle.cssは直接インクルードされないけど、
-  // Service Workerがキャッシュする対象として、HTML自体をキャッシュすることが重要だよ。
-  // background-imageで使ってるflash.gifも直接参照してるから、ここに含めるか確認
-  // もしflash.gifをasset/resourceで出力しているなら、ここに追加が必要。
-  // 今回asset/inlineでbundle.jsに埋め込んでるから、直接は不要だけど、
-  // もし将来的に外部ファイルにしたらここに加えること！
-  '/BPMcalculater/manifest.webmanifest', // Web App Manifestファイル
-  '/BPMcalculater/service-worker.js',    // Service Worker自身もキャッシュしておくと安心
-  '/BPMcalculater/icons/icon-192x192.png', // マニフェストで指定したアイコン
+  '/BPMcalculater/',                     // アプリのトップページ（index.html）
+  '/BPMcalculater/index.html',           // index.html自体を明示
+  '/BPMcalculater/manifest.webmanifest', // Web App Manifest
+  '/BPMcalculater/service-worker.js',    // Service Worker自身
+  '/BPMcalculater/icons/icon-192x192.png', // アプリのアイコン
   '/BPMcalculater/icons/icon-512x512.png',
   '/BPMcalculater/icons/icon-maskable-192x192.png',
   '/BPMcalculater/icons/icon-maskable-512x512.png',
-  // 必要に応じて、アプリ内で使われる他の画像、フォント、JSONデータなども追加するよ！
-  // 例: '/images/background.jpg', '/data/songs.json', '/fonts/myfont.woff2'
+  // 必要に応じて、追加の画像やフォントなどもここに追加する
 ];
 
-// 1. Service Workerのインストールイベント
-// Service Workerがブラウザにインストールされた時に発生するよ。
-// ここで、アプリの起動に必要な主要なファイルをキャッシュに保存するんだ。
+// --- 1. Service Workerのインストール ---
+// Service Workerがブラウザに登録されたときに、必須ファイルをキャッシュに保存する
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing...');
-  // waitUntil() は、Promiseが解決されるまでインストール処理を待機させるよ
   event.waitUntil(
-    caches.open(CACHE_NAME) // 定義した名前で新しいキャッシュを開く
+    caches.open(CACHE_NAME) // 新しいキャッシュを開く
       .then((cache) => {
         console.log('[Service Worker] Caching app shell');
-        return cache.addAll(urlsToCache); // リストアップした全てのファイルをキャッシュに追加
+        return cache.addAll(urlsToCache); // 定義されたファイルを全てキャッシュ
       })
       .catch((error) => {
         console.error('[Service Worker] Cache addAll failed:', error);
       })
   );
-  // Service Workerがインストールされたらすぐにアクティブになるようにする
-  // これにより、ページの再読み込みを待たずにService Workerが制御を開始できる
-  self.skipWaiting();
+  self.skipWaiting(); // インストール後すぐにアクティブ化
 });
 
-// 2. Service Workerのアクティベートイベント
-// 新しいService Workerがインストールされて、古いService Workerが完全に制御を失った時に発生するよ。
-// ここで、古いキャッシュをクリーンアップするんだ。
+// --- 2. Service Workerのアクティベート ---
+// 新しいService Workerが有効になったときに、古いキャッシュをクリーンアップする
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activating...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => { // 現在のキャッシュのキー（名前）を全て取得
+    caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          // 現在のキャッシュ名と異なる（つまり古い）キャッシュを削除するよ
+          // 現在のキャッシュ名と異なる（古い）キャッシュを削除
           if (cacheName !== CACHE_NAME) {
             console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
@@ -63,59 +50,54 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
-        // Service Workerがアクティベートされたら、クライアント（ページ）を制御するように要求する
-        return self.clients.claim();
+      return self.clients.claim(); // Service Workerがページを制御を開始
     })
   );
 });
 
-// 3. フェッチイベント (リクエストの横取り)
-// ブラウザが何かをリクエストするたびに発生するよ（HTML、CSS、画像、APIなど）。
-// ここで、キャッシュから返すか、ネットワークから取得するかを判断するんだ。
+// --- 3. フェッチイベント（リクエストの横取りとキャッシュ戦略） ---
+// ブラウザからの全てのリクエストをここで横取りし、キャッシュ戦略を適用する
 self.addEventListener('fetch', (event) => {
-  // navigationリクエスト（HTMLファイルのロード）は、常にネットワークから最新のものを取得し、
-  // 取得できたらキャッシュを更新する（Stale-While-Revalidate に近い）
-  // ただし、オフライン時はキャッシュから返す
+  // ナビゲーションリクエスト（HTMLページのロード）の場合の処理
   if (event.request.mode === 'navigate') {
     event.respondWith(
+      // ネットワークから最新のHTMLを取得しようと試みる
       fetch(event.request).catch(() => {
-        // ネットワークがオフラインの場合やエラーの場合、キャッシュからHTMLを返す
-        return caches.match('/BPMcalculater/index.html'); // トップページを返すことが多い
+        // ネットワークエラー時（オフライン時など）はキャッシュからindex.htmlを返す
+        return caches.match('/BPMcalculater/index.html');
       })
     );
-    return; // navigateリクエストの処理はここまで
+    return; // ナビゲーションリクエストの処理はここで終了
   }
 
-  // それ以外のリクエスト（画像、CSS、JSなど）は、キャッシュ優先戦略 (Cache-First)
-  // まずキャッシュにヒットするか確認し、あればキャッシュから返す
+  // それ以外のリクエスト（CSS, JS, 画像など）は「キャッシュ優先」戦略
   event.respondWith(
-    caches.match(event.request)
+    caches.match(event.request) // まずキャッシュにリクエストがあるか確認
       .then((response) => {
-        // キャッシュにあればキャッシュから返す
+        // キャッシュにあればそれを返す
         if (response) {
           console.log('[Service Worker] Serving from cache:', event.request.url);
           return response;
         }
 
-        // キャッシュになければネットワークから取得する
+        // キャッシュになければネットワークから取得
         console.log('[Service Worker] Fetching from network:', event.request.url);
         return fetch(event.request)
           .then((networkResponse) => {
-            // ネットワークから取得したレスポンスをキャッシュに追加（ストリームは一度しか読めないのでクローンする）
+            // ネットワークから取得した有効なレスポンスをキャッシュに追加
             if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then((cache) => {
-                  cache.put(event.request, responseToCache);
-                });
+              const responseToCache = networkResponse.clone(); // レスポンスは一度しか読めないのでクローン
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
             }
-            return networkResponse;
+            return networkResponse; // ネットワークレスポンスを返す
           });
       })
       .catch((error) => {
         console.error('[Service Worker] Fetch failed and no cache match for:', event.request.url, error);
-        // ここでオフライン時のフォールバックコンテンツ（例えば、オフラインページなど）を返すこともできるよ
-        // return caches.match('/offline.html');
+        // 必要に応じて、オフライン時のフォールバックコンテンツをここで返す
+        // 例: return caches.match('/offline.html');
       })
   );
 });
