@@ -227,7 +227,7 @@ function handleTapStart(event) {
         let detectedBPM = 60000 / averageInterval; // BPMに変換
 
         // 計算されたBPMを丸めて、0-999の範囲に制限する
-        detectedBPM = Math.round(detectedBPM); 
+        detectedBPM = Math.floor(detectedBPM); //四捨五入から切り捨てに修正
         if (detectedBPM < 0) { 
             detectedBPM = 0;
         }

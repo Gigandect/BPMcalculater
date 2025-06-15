@@ -1,7 +1,7 @@
 // service-worker.js
 
 // キャッシュの名前を定義（新しいバージョンで更新できるようバージョン番号を含む）
-const CACHE_NAME = 'bpm-calculator-cache-v1.0.1';
+const CACHE_NAME = 'bpm-calculator-cache-v1.0.2';
 
 // オフライン動作に必要なファイルのリスト
 // これらはService Workerがインストールされたときにキャッシュされるよ
