@@ -221,13 +221,30 @@ function handleTapStart(event) {
             intervals.push(tapTimes[i + 1] - tapTimes[i]);
         }
 
+        // 外れ値（平均から大きくズレたタップ間隔）を除外する
         const sum = intervals.reduce((a, b) => a + b, 0);
-        const averageInterval = sum / intervals.length; // 間隔の平均値
+        const initialAverageInterval = sum / intervals.length; // 間隔の平均値
+
+        // 平均値から大きくかけ離れた間隔をフィルタリングする
+        const filteredIntervals = intervals.filter(interval => {
+            const deviation = Math.abs(interval - initialAverageInterval);
+            return deviation <= initialAverageInterval * 0.25; // 平均から25%以上離れた数値は除外
+        });
+
+        let averageInterval;
+        if (filteredIntervals.length > 0) {
+            // 外れ値を除去した後の間隔で平均を再計算
+            const filteredSum = filteredIntervals.reduce((a, b) => a + b, 0);
+            averageInterval = filteredSum / filteredIntervals.length;
+        } else {
+            // フィルタリングの結果、有効な間隔が残らなかった場合、元の平均値を使う
+            averageInterval = initialAverageInterval;
+        }
 
         let detectedBPM = 60000 / averageInterval; // BPMに変換
 
         // 計算されたBPMを丸めて、0-999の範囲に制限する
-        detectedBPM = Math.floor(detectedBPM); //四捨五入から切り捨てに修正
+        detectedBPM = Math.round(detectedBPM); //四捨五入から切り捨てに修正
         if (detectedBPM < 0) { 
             detectedBPM = 0;
         }
@@ -235,7 +252,7 @@ function handleTapStart(event) {
             detectedBPM = 999;
         }
 
-        currentBpmInput.value = Math.round(detectedBPM); // BPM入力欄に結果を設定
+        currentBpmInput.value = detectedBPM; // BPM入力欄に結果を設定
         calculateAndDisplayResult(); // 結果表示も更新
     }
 
